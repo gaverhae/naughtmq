@@ -1,0 +1,43 @@
+zmq_version = "4.0.4"
+jzmq_version = "2.2.2"
+zmq_name = "zeromq-#{zmq_version}"
+
+task :default => ["build-libs", :clean]
+
+task "build-libs" => ["libjzmq.dylib", "libzmq.dylib"]
+
+task :clean do
+    sh "rm -rf #{zmq_name}"
+    sh "rm -rf #{zmq_name}.tar.gz"
+    sh "rm -rf jzmq"
+    sh "rm -rf zmq_build"
+end
+
+file "libjzmq.dylib" => ["zmq_build"] do
+    sh "git clone https://github.com/zeromq/jzmq.git"
+    sh "cd jzmq && git checkout v#{jzmq_version} && ./autogen.sh"
+    sh "cd jzmq && ./configure --with-zeromq=$(realpath ../zmq_build)"
+    sh "cd jzmq && make"
+    sh "mv jzmq/src/.libs/libjzmq.0.dylib ./libjzmq.dylib"
+end
+
+file "libzmq.dylib" => ["zmq_build"] do
+    sh "cp zmq_build/lib/libzmq.dylib ./"
+end
+
+directory "zmq_build"
+file "zmq_build" => zmq_name do
+    sh "cd #{zmq_name} && ./configure && make"
+    sh "mv #{zmq_name}/include zmq_build/"
+    sh "mkdir zmq_build/lib"
+    sh "mv #{zmq_name}/src/.libs/libzmq.3.dylib zmq_build/lib/libzmq.dylib"
+end
+
+directory zmq_name
+file zmq_name => ["#{zmq_name}.tar.gz"] do
+    sh "tar xzf #{zmq_name}.tar.gz"
+end
+
+file "#{zmq_name}.tar.gz" do
+    sh "wget http://download.zeromq.org/#{zmq_name}.tar.gz"
+end
