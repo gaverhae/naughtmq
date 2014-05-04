@@ -1,0 +1,54 @@
+zmq_version = "4.0.4"
+jzmq_version = "2.2.2"
+zmq_name = "zeromq-#{zmq_version}"
+
+def vsh cmd
+    sh "vagrant ssh -c 'cd /vagrant && #{cmd}'"
+end
+
+task :default => ["build-libs", :clean]
+
+task "build-libs" => ["libjzmq.so", "libzmq.so"]
+
+task :clean do
+    sh "rm -rf #{zmq_name}"
+    sh "rm -rf #{zmq_name}.tar.gz"
+    sh "rm -rf jzmq"
+    sh "rm -rf zmq_build"
+    sh "vagrant destroy -f && rm vagrant_running"
+end
+
+file "libjzmq.so" => ["zmq_build"] do
+    vsh "git clone https://github.com/zeromq/jzmq.git"
+    vsh "cd jzmq && git checkout v#{jzmq_version} && ./autogen.sh"
+    vsh "cd jzmq && ./configure --with-zeromq=$(realpath ../zmq_build)"
+    vsh "cd jzmq && make"
+    vsh "mv jzmq/src/.libs/libjzmq.so.0.0.0 ./libjzmq.so"
+end
+
+file "libzmq.so" => ["vagrant_running", "zmq_build"] do
+    sh "cp zmq_build/lib/libzmq.so ./"
+end
+
+directory "zmq_build"
+file "zmq_build" => ["vagrant_running", zmq_name] do
+    vsh "cd #{zmq_name} && ./configure && make"
+    vsh "mv #{zmq_name}/include zmq_build/"
+    vsh "mkdir zmq_build/lib"
+    vsh "mv #{zmq_name}/src/.libs/libzmq.so.3.1.0 zmq_build/lib/libzmq.so"
+end
+
+directory zmq_name
+file zmq_name => ["vagrant_running", "#{zmq_name}.tar.gz"] do
+    vsh "tar xzf #{zmq_name}.tar.gz"
+end
+
+file "#{zmq_name}.tar.gz" => ["vagrant_running"] do
+    vsh "wget http://download.zeromq.org/#{zmq_name}.tar.gz"
+end
+
+file "vagrant_running" do |t|
+    sh "vagrant up && touch #{t.name}"
+    vsh "sudo apt-get update"
+    vsh "sudo apt-get install -y g++ make git pkg-config libtool autoconf realpath openjdk-7-jdk"
+end
