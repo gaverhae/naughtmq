@@ -3,29 +3,30 @@
             [pandect.core :as p]
             [clojure.java.io :as io]))
 
+(defn platform
+  "Returns a keyword representing the current platform, one of :win32, :win64,
+  :linux32, :linux64, or :mac."
+  []
+  (let [os-arch (. (System/getProperty "os.arch") toLowerCase)
+        os-name (. (System/getProperty "os.name") toLowerCase)]
+    (cond (and (.startsWith os-name "win") (= "x86" os-arch))      :win32
+          (and (.startsWith os-name "win") (= "x64" os-arch))      :win64
+          (and (.startsWith os-name "mac"))                        :mac
+          (and (.startsWith os-name "linux") (= "i386" os-arch))   :linux32
+          (and (.startsWith os-name "linux") (= "amd64" os-arch))  :linux64
+          :else
+          (throw (UnsupportedOperationException.
+                   (str "Unsupported platform: " os-name ", " os-arch))))))
+
 (defn- os-specific-path
   "Finds the OS specific path for the given library name."
   [s]
-  (let [os-arch (. (System/getProperty "os.arch") toLowerCase)
-        os-name (. (System/getProperty "os.name") toLowerCase)]
-    (cond (and (.startsWith os-name "win") (= "x86" os-arch))
-          (str "win-x86/" s ".dll")
-
-          (and (.startsWith os-name "win") (= "x64" os-arch))
-          (str "win-x86_64/" s ".dll")
-
-          (and (.startsWith os-name "mac")) ; assume all macs are 64bits
-          (str "macosx/" s ".dylib")
-
-          (and (.startsWith os-name "linux") (= "i386" os-arch))
-          (str "linux-x86/" s ".so")
-
-          (and (.startsWith os-name "linux") (= "amd64" os-arch))
-          (str "linux-x86_64/" s ".so")
-
-          :else (throw (UnsupportedOperationException.
-                         (str "Unsupported platform: " os-name ", " os-arch
-                              " for library " s))))))
+  (get {:win32   (str "win-x86/" s ".dll")
+        :win64   (str "win-x86_64/" s ".dll")
+        :mac     (str "macosx/" s ".dylib")
+        :linux32 (str "linux-x86/" s ".so")
+        :linux64 (str "linux-x86_64/" s ".so")}
+       (platform)))
 
 (defn- save-library
   [s]
