@@ -54,7 +54,7 @@
                      tmp-path
                      " already exists but has different content.")))
             (log/info (str "Lib was already there: " tmp-path))))))
-    path))
+    tmp-path))
 
 (defn- load-library
   "Loads the given file as a native library. The file must be in the native
