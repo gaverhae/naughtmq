@@ -3,7 +3,7 @@
             [pandect.core :as p]
             [clojure.java.io :as io]))
 
-(defn os-specific-path
+(defn- os-specific-path
   "Finds the OS specific path for the given library name."
   [s]
   (let [os-arch (. (System/getProperty "os.arch") toLowerCase)
@@ -27,7 +27,7 @@
                          (str "Unsupported platform: " os-name ", " os-arch
                               " for library " s))))))
 
-(defn copy-stream
+(defn- copy-stream
   "Copies in to out."
   [^java.io.InputStream in ^java.io.OutputStream out]
   (with-local-vars [buf (byte-array (* 16 1024))]
@@ -37,7 +37,7 @@
           (.write out buf 0 cnt)
           (recur))))))
 
-(defn save-library
+(defn- save-library
   [s]
   (let [lib-name (os-specific-path s)
         lib-path (str "/native/" lib-name)
@@ -56,7 +56,7 @@
           (log/info (str "Saved lib to: " path))
           path)))))
 
-(defn load-library
+(defn- load-library
   "Loads the given path (string) as a native library."
   [s]
   (let [file_path (save-library s)]
