@@ -35,7 +35,7 @@
   (let [lib-path (str "native/" (arch) "/" (os) "/" lib-name)
         tmp-dir  (io/file (str (System/getProperty "java.io.tmpdir")
                             "/naughtmq/"
-                            (-> lib-path io/resource slurp p/sha1)
+                            (-> lib-path io/resource io/input-stream p/sha1)
                             "/"))
         tmp-path (-> (str tmp-dir "/" lib-name) io/file)]
     (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
