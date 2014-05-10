@@ -1,5 +1,6 @@
 (ns naughtmq.core
   (:require [taoensso.timbre :as log]
+            [pandect.core :as p]
             [clojure.java.io :as io]))
 
 (defn os-specific-path
@@ -42,7 +43,10 @@
         lib-path (str "/native/" lib-name)
         tmp-path (System/getProperty "java.io.tmpdir")]
     (with-open [in (-> lib-path io/resource io/input-stream)
-                tmp-dir (java.io.File. (str tmp-path "/naughtmq/" v))]
+                tmp-dir (java.io.File.
+                          (str tmp-path
+                               "/naughtmq/"
+                               (p/sha1-file lib-path) "/"))]
       (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
       (with-open [file (java.io.File/createTempFile (str s "-") ".tmp" tmp-dir)
                   out (-> file io/output-stream)]
