@@ -37,7 +37,7 @@
           (recur))))))
 
 (defn save-library
-  [s v]
+  [s]
   (let [lib-name (os-specific-path s)
         lib-path (str "/native/" lib-name)
         tmp-path (System/getProperty "java.io.tmpdir")]
@@ -54,8 +54,8 @@
 
 (defn load-library
   "Loads the given path (string) as a native library."
-  [s v]
-  (let [file_path (save-library s v)]
+  [s]
+  (let [file_path (save-library s)]
     (try (System/load file_path)
       (catch java.io.IOException e
         (log/error (str "Could not load native file: " s))
