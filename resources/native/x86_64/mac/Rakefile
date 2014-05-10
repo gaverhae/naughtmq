@@ -13,12 +13,16 @@ task :clean do
     sh "rm -rf zmq_build"
 end
 
-file "libjzmq.dylib" => ["zmq_build"] do
+file "libjzmq.dylib" => ["zmq_build", "libzmq.dylib"] do
     sh "git clone https://github.com/zeromq/jzmq.git"
     sh "cd jzmq && git checkout v#{jzmq_version} && ./autogen.sh"
     sh "cd jzmq && ./configure --with-zeromq=$(realpath ../zmq_build)"
     sh "cd jzmq && make"
     sh "mv jzmq/src/.libs/libjzmq.0.dylib ./libjzmq.dylib"
+    sh "echo pwd; echo $(pwd)"
+    sh("install_name_tool -change /usr/local/lib/libzmq.3.dylib " +
+       "@loader_path/../$(sha1sum libzmq.dylib | awk '{print $1}')/libzmq.dylib " +
+       "libjzmq.dylib")
 end
 
 file "libzmq.dylib" => ["zmq_build"] do
