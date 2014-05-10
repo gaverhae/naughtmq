@@ -39,7 +39,7 @@
 (defn save-library
   [s v]
   (let [lib-name (os-specific-path s)
-        lib-path (str v "/lib/" lib-name)
+        lib-path (str "/native/" lib-name)
         tmp-path (System/getProperty "java.io.tmpdir")]
     (with-open [in (-> lib-path io/resource io/input-stream)
                 tmp-dir (java.io.File. (str tmp-path "/naughtmq/" v))]
