@@ -10,6 +10,9 @@
     (cond (and (.startsWith os-name "win") (= "x86" os-arch))
           (str "win-x86/" s ".dll")
 
+          (and (.startsWith os-name "win") (= "x64" os-arch))
+          (str "win-x86_64/" s ".dll")
+
           (and (.startsWith os-name "mac")) ; assume all macs are 64bits
           (str "macosx/" s ".dylib")
 
