@@ -41,19 +41,29 @@
   [s]
   (let [lib-name (os-specific-path s)
         lib-path (str "/native/" lib-name)
-        tmp-path (System/getProperty "java.io.tmpdir")]
-    (with-open [in (-> lib-path io/resource io/input-stream)
-                tmp-dir (java.io.File.
-                          (str tmp-path
-                               "/naughtmq/"
-                               (p/sha1-file lib-path) "/"))]
-      (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
-      (with-open [file (java.io.File/createTempFile (str s "-") ".tmp" tmp-dir)
-                  out (-> file io/output-stream)]
+        tmp-dir  (io/file (str (System/getProperty "java.io.tmpdir")
+                            "/naughtmq/" (p/sha1-file lib-path) "/"))
+        tmp-path (-> (str tmp-dir "/" s) io/file .getAbsolutePath)]
+    (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
+    (if (not (.exists tmp-path))
+      (with-open [in  (-> lib-path io/resource io/input-stream)
+                  out (-> tmp-path io/output-stream)]
         (copy-stream in out)
-        (let [path (.getAbsolutePath file)]
-          (log/info (str "Saved lib to: " path))
-          path)))))
+        (log/info (str "Saved lib to: " tmp-path)))
+      (with-open [in  (-> lib-path io/resource io/input-stream)
+                  out (-> tmp-path io/input-stream)]
+        (let [to-byte-seq (fn [is] (let [os (java.io.ByteArrayOutputStream.)]
+                                     (io/copy is os)
+                                     (-> os .toByteArray seq)))]
+          (if (not (= (to-byte-seq in)
+                      (to-byte-seq out)))
+            (throw
+              (IllegalStateException.
+                (str "File "
+                     tmp-path
+                     " already exists but has different content.")))
+            (log/info (str "Lib was already there: " tmp-path))))))
+    path))
 
 (defn- load-library
   "Loads the given path (string) as a native library."
