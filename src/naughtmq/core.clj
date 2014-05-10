@@ -3,38 +3,41 @@
             [pandect.core :as p]
             [clojure.java.io :as io]))
 
-(defn platform
-  "Returns a keyword representing the current platform, one of :win32, :win64,
-  :linux32, :linux64, or :mac."
+(defn os
+  "Returns a string representing the current operating system, one of win,
+  linux, or mac."
   []
   (let [os-arch (. (System/getProperty "os.arch") toLowerCase)
         os-name (. (System/getProperty "os.name") toLowerCase)]
-    (cond (and (.startsWith os-name "win") (= "x86" os-arch))      :win32
-          (and (.startsWith os-name "win") (= "x64" os-arch))      :win64
-          (and (.startsWith os-name "mac"))                        :mac
-          (and (.startsWith os-name "linux") (= "i386" os-arch))   :linux32
-          (and (.startsWith os-name "linux") (= "amd64" os-arch))  :linux64
+    (cond (.startsWith os-name "win")    "win"
+          (.startsWith os-name "mac")    "mac"
+          (.startsWith os-name "linux")  "linux"
           :else
           (throw (UnsupportedOperationException.
                    (str "Unsupported platform: " os-name ", " os-arch))))))
 
-(defn- os-specific-path
-  "Finds the OS specific path for the given library name."
-  [s]
-  (get {:win32   (str "win-x86/" s ".dll")
-        :win64   (str "win-x86_64/" s ".dll")
-        :mac     (str "macosx/" s ".dylib")
-        :linux32 (str "linux-x86/" s ".so")
-        :linux64 (str "linux-x86_64/" s ".so")}
-       (platform)))
+(defn arch
+  "Returns a string representing the current architecture, one of x86 or
+  x86_64."
+  []
+  (let [os-arch (. (System/getProperty "os.arch") toLowerCase)
+        os-name (. (System/getProperty "os.name") toLowerCase)]
+    (cond (.startsWith os-arch "x86")    "x86"
+          (.startsWith os-arch "i386")   "x86"
+          (.startsWith os-arch "i686")   "x86"
+          (.startsWith os-arch "x86_64") "x86_64"
+          :else
+          (throw (UnsupportedOperationException.
+                   (str "Unsupported platform: " os-name ", " os-arch))))))
 
 (defn- save-library
-  [s]
-  (let [lib-name (os-specific-path s)
-        lib-path (str "/native/" lib-name)
+  [lib-name]
+  (let [lib-path (str "native/" (arch) "/" (os) "/" lib-name)
         tmp-dir  (io/file (str (System/getProperty "java.io.tmpdir")
-                            "/naughtmq/" (p/sha1-file lib-path) "/"))
-        tmp-path (-> (str tmp-dir "/" s) io/file .getAbsolutePath)]
+                            "/naughtmq/"
+                            (-> lib-path io/resource slurp p/sha1)
+                            "/"))
+        tmp-path (-> (str tmp-dir "/" lib-name) io/file)]
     (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
     (if (not (.exists tmp-path))
       (with-open [in  (-> lib-path io/resource io/input-stream)
@@ -54,7 +57,7 @@
                      tmp-path
                      " already exists but has different content.")))
             (log/info (str "Lib was already there: " tmp-path))))))
-    tmp-path))
+    (.getAbsolutePath tmp-path)))
 
 (defn- load-library
   "Loads the given file as a native library. The file must be in the native
