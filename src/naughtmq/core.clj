@@ -56,7 +56,8 @@
     path))
 
 (defn- load-library
-  "Loads the given path (string) as a native library."
+  "Loads the given file as a native library. The file must be in the native
+  folder in the CLASSPATH."
   [s]
   (let [file_path (save-library s)]
     (try (System/load file_path)
