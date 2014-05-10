@@ -69,6 +69,15 @@
         (log/error (str "Could not load native file: " s))
         (throw e)))))
 
+(defn- load-libraries
+  "Loads the native libraries."
+  []
+  (let [libs (get {"win"   ["msvcr100" "msvcp100" "libzmq" "jzmq"]
+                   "linux" ["libzmq" "libjzmq"]
+                   "mac"   ["libzmq.dylib" "libjzmq.dylib"]}
+                  (os))]
+    (doseq [l libs] (load-library l))))
+
 (defn load-zmq-native
   "Loads all required native libraries for using ZeroMQ on the current
   platform. This is done by first extracting the binaries from the JAR, then
@@ -76,10 +85,4 @@
   asking the JVM to load the native libraries there. This is done in the
   correct order, so that the JVM does not need to look at java.library.path."
   []
-  (let [libs (get {:win32 ["jzmq.dll" "libzmq.dll" "msvcp100.dll" "msvcr100.dll"]
-                   :win64 ["jzmq.dll" "libzmq.dll" "msvcp100.dll" "msvcr100.dll"]
-                   :linux32 ["libjzmq.so" "libzmq.so"]
-                   :linux64 ["libjzmq.so" "libzmq.so"]
-                   :mac ["libjzmq.dylib" "libzmq.dylib"]}
-                  (platform))]
-    (doseq [l libs] (load-library l))))
+  (load-libraries))
