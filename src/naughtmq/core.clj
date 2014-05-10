@@ -27,16 +27,6 @@
                          (str "Unsupported platform: " os-name ", " os-arch
                               " for library " s))))))
 
-(defn- copy-stream
-  "Copies in to out."
-  [^java.io.InputStream in ^java.io.OutputStream out]
-  (with-local-vars [buf (byte-array (* 16 1024))]
-    (loop []
-      (let [cnt (.read in buf)]
-        (when (>= cnt -1)
-          (.write out buf 0 cnt)
-          (recur))))))
-
 (defn- save-library
   [s]
   (let [lib-name (os-specific-path s)
@@ -48,7 +38,7 @@
     (if (not (.exists tmp-path))
       (with-open [in  (-> lib-path io/resource io/input-stream)
                   out (-> tmp-path io/output-stream)]
-        (copy-stream in out)
+        (io/copy in out)
         (log/info (str "Saved lib to: " tmp-path)))
       (with-open [in  (-> lib-path io/resource io/input-stream)
                   out (-> tmp-path io/input-stream)]
