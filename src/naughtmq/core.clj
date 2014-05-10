@@ -22,13 +22,13 @@
   []
   (let [os-arch (. (System/getProperty "os.arch") toLowerCase)
         os-name (. (System/getProperty "os.name") toLowerCase)]
-    (cond (.startsWith os-arch "x86")    "x86"
-          (.startsWith os-arch "i386")   "x86"
-          (.startsWith os-arch "i686")   "x86"
-          (.startsWith os-arch "x86_64") "x86_64"
-          :else
-          (throw (UnsupportedOperationException.
-                   (str "Unsupported platform: " os-name ", " os-arch))))))
+    (condp = os-arch
+      "x86"    "x86"
+      "i386"   "x86"
+      "i686"   "x86"
+      "x86_64" "x86_64"
+      (throw (UnsupportedOperationException.
+               (str "Unsupported platform: " os-name ", " os-arch))))))
 
 (defn- save-library
   [lib-name]
