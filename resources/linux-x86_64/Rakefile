@@ -24,10 +24,12 @@ file "libjzmq.so" => ["zmq_build"] do
     vsh "cd jzmq && ./configure --with-zeromq=$(realpath ../zmq_build)"
     vsh "cd jzmq && make"
     vsh "mv jzmq/src/.libs/libjzmq.so.0.0.0 ./libjzmq.so"
+    vsh "strip --strip-unneeded libjzmq.so"
 end
 
 file "libzmq.so" => ["vagrant_running", "zmq_build"] do
-    sh "cp zmq_build/lib/libzmq.so ./"
+    vsh "cp zmq_build/lib/libzmq.so ./"
+    vsh "strip --strip-unneeded libzmq.so"
 end
 
 directory "zmq_build"
