@@ -50,7 +50,6 @@
       (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
       (with-open [file (java.io.File/createTempFile (str s "-") ".tmp" tmp-dir)
                   out (-> file io/output-stream)]
-        (.deleteOnExit file)
         (copy-stream in out)
         (let [path (.getAbsolutePath file)]
           (log/info (str "Saved lib to: " path))
