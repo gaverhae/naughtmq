@@ -40,10 +40,10 @@ end
 
 directory "zmq_build"
 file "zmq_build" => zmq_name do
-    sh "cd #{zmq_name} && ./configure && make"
-    sh "mv #{zmq_name}/include zmq_build/"
     sh "mkdir zmq_build/lib"
-    sh "mv #{zmq_name}/src/.libs/libzmq.3.dylib zmq_build/lib/libzmq.dylib"
+    sh "cd #{zmq_name} && ./configure && make"
+    sh "cp -r #{zmq_name}/include zmq_build/"
+    sh "cp #{zmq_name}/src/.libs/libzmq.3.dylib zmq_build/lib/libzmq.dylib"
 end
 
 directory zmq_name
