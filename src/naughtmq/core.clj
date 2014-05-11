@@ -3,7 +3,7 @@
             [pandect.core :as p]
             [clojure.java.io :as io]))
 
-(defn os
+(defn- os
   "Returns a string representing the current operating system, one of win,
   linux, or mac."
   []
@@ -16,7 +16,7 @@
           (throw (UnsupportedOperationException.
                    (str "Unsupported platform: " os-name ", " os-arch))))))
 
-(defn arch
+(defn- arch
   "Returns a string representing the current architecture, one of x86 or
   x86_64."
   []
