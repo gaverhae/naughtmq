@@ -4,7 +4,20 @@ zmq_name = "zeromq-#{zmq_version}"
 
 task :default => ["build-libs", :clean]
 
-task "build-libs" => ["libjzmq.dylib", "libzmq.dylib"]
+task "build-libs" => ["libjzmq.dylib", "libzmq.dylib"] do
+    base = "/tmp/naughtmq"
+    relocate_id = lambda do |name, version|
+        sh("install_name_tool \
+            -id #{base}/#{name}/#{version}/lib#{name}.dylib \
+            lib#{name}.dylib")
+    end
+    sh("install_name_tool \
+        -change /usr/local/lib/libzmq.3.dylib \
+                #{base}/zmq/#{zmq_version}/libzmq.dylib
+        libjzmq.dylib")
+    relocate_id["jzmq", jzmq_version]
+    relocate_id["zmq", zmq_version]
+end
 
 task :clean do
     sh "rm -rf #{zmq_name}"
@@ -18,11 +31,7 @@ file "libjzmq.dylib" => ["zmq_build", "libzmq.dylib"] do
     sh "cd jzmq && git checkout v#{jzmq_version} && ./autogen.sh"
     sh "cd jzmq && ./configure --with-zeromq=$(realpath ../zmq_build)"
     sh "cd jzmq && make"
-    sh "mv jzmq/src/.libs/libjzmq.0.dylib ./libjzmq.dylib"
-    sh "echo pwd; echo $(pwd)"
-    sh("install_name_tool -change /usr/local/lib/libzmq.3.dylib " +
-       "@loader_path/../$(sha1sum libzmq.dylib | awk '{print $1}')/libzmq.dylib " +
-       "libjzmq.dylib")
+    sh "cp jzmq/src/.libs/libjzmq.0.dylib ./libjzmq.dylib"
 end
 
 file "libzmq.dylib" => ["zmq_build"] do
