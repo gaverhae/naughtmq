@@ -1,6 +1,5 @@
 (ns naughtmq.core
   (:require [taoensso.timbre :as log]
-            [pandect.core :as p]
             [clojure.java.io :as io])
   (:import [naughtmq PrivateLoader]
            [org.zeromq EmbeddedLibraryTools]
