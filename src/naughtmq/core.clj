@@ -6,6 +6,10 @@
            [org.zeromq EmbeddedLibraryTools]
            [java.lang.reflect Field Modifier]))
 
+(def version-for
+  {"jzmq" "2.2.2"
+   "zmq"  "4.0.4"})
+
 (defn- os
   "Returns a string representing the current operating system, one of win,
   linux, or mac."
@@ -33,14 +37,29 @@
       (throw (UnsupportedOperationException.
                (str "Unsupported platform: " os-name ", " os-arch))))))
 
+(defn- os-temp-dir
+  "Returns an OS-specific temp dir. Mostly needed because java.io.tmpdir yields
+  nondeterministic results on Mac OS X, which, combined with the rather rigid
+  way in which Mac OS X resolves dynamic libraries, makes it unreliable."
+  [lib-name]
+  (io/file (str (cond (= "mac" (os)) "/tmp/"
+                      :else          (System/getProperty "java.io.tmpdir"))
+                "/naughtmq/" lib-name "/" (version-for lib-name) "/")))
+
+(defn- os-name
+  "Returns an os-specific name for the given library name. For example, zmq
+  will become libzmq.dylib on OS X."
+  [lib-name]
+  (condp = (os)
+    "mac"   (str "lib" lib-name ".dylib")
+    "linux" (str "lib" lib-name ".so")
+    "win"   (str lib-name ".dll")))
+
 (defn- save-library
   [lib-name]
-  (let [lib-path (str "native/" (arch) "/" (os) "/" lib-name)
-        tmp-dir  (io/file (str (System/getProperty "java.io.tmpdir")
-                            "/naughtmq/"
-                            (-> lib-path io/resource io/input-stream p/sha1)
-                            "/"))
-        tmp-path (-> (str tmp-dir "/" lib-name) io/file)]
+  (let [lib-path (str "native/" (arch) "/" (os) "/" (os-name lib-name))
+        tmp-dir  (os-temp-dir lib-name)
+        tmp-path (-> (str tmp-dir "/" (os-name lib-name)) io/file)]
     (if (not (.exists tmp-dir)) (.mkdirs tmp-dir))
     (if (not (.exists tmp-path))
       (with-open [in  (-> lib-path io/resource io/input-stream)
@@ -77,7 +96,7 @@
   []
   (let [libs (get {"win"   ["msvcr100" "msvcp100" "libzmq" "jzmq"]
                    "linux" ["libzmq" "libjzmq"]
-                   "mac"   ["libzmq.dylib" "libjzmq.dylib"]}
+                   "mac"   ["zmq" "jzmq"]}
                   (os))]
     (doseq [l libs] (load-library l))))
 
