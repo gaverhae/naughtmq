@@ -13,7 +13,7 @@ task "build-libs" => ["libjzmq.dylib", "libzmq.dylib"] do
     end
     sh("install_name_tool \
         -change /usr/local/lib/libzmq.3.dylib \
-                #{base}/zmq/#{zmq_version}/libzmq.dylib
+                #{base}/zmq/#{zmq_version}/libzmq.dylib \
         libjzmq.dylib")
     relocate_id["jzmq", jzmq_version]
     relocate_id["zmq", zmq_version]
