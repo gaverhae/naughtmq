@@ -1,7 +1,9 @@
 (ns naughtmq.core
   (:require [taoensso.timbre :as log]
             [pandect.core :as p]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import [org.zeromq EmbeddedLibraryTools]
+           [java.lang.reflect Field Modifier]))
 
 (defn- os
   "Returns a string representing the current operating system, one of win,
@@ -78,11 +80,28 @@
                   (os))]
     (doseq [l libs] (load-library l))))
 
+(defn- disable-jzmq-dynamic-loading
+  "Prevents jzmq to look for the native library in java.library.path, as the
+  whole point of this namespace is that the native libraries must already be
+  loaded when the JVM loads the ZMQ class. This requires setting a final field
+  of the org.zeromq.EmbeddedLibraryTools class."
+  []
+  (let [f (.getField EmbeddedLibraryTools "LOADED_EMBEDDED_LIBRARY")
+        modif (.getDeclaredField Field "modifiers")]
+    (.setAccessible f true)
+    (.setAccessible modif true)
+    (.setInt modif f (bit-and (.getModifiers f) (bit-not Modifier/FINAL)))
+    (.set f nil true)
+    (.setInt modif f (bit-and (.getModifiers f) Modifier/FINAL))))
+
 (defn load-zmq-native
   "Loads all required native libraries for using ZeroMQ on the current
   platform. This is done by first extracting the binaries from the JAR, then
   copying them to /tmp/naughtmq/ (or the equivalent on Windows), and then
   asking the JVM to load the native libraries there. This is done in the
-  correct order, so that the JVM does not need to look at java.library.path."
+  correct order, so that the JVM does not need to look at java.library.path.
+  Additionally, prevents JZMQ itself from asking the JVM to load the native
+  libraries."
   []
-  (load-libraries))
+  (load-libraries)
+  (disable-jzmq-dynamic-loading))
