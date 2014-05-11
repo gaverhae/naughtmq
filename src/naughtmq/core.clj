@@ -2,7 +2,8 @@
   (:require [taoensso.timbre :as log]
             [pandect.core :as p]
             [clojure.java.io :as io])
-  (:import [org.zeromq EmbeddedLibraryTools]
+  (:import [naughtmq PrivateLoader]
+           [org.zeromq EmbeddedLibraryTools]
            [java.lang.reflect Field Modifier]))
 
 (defn- os
@@ -66,7 +67,7 @@
   folder in the CLASSPATH."
   [s]
   (let [file_path (save-library s)]
-    (try (System/load file_path)
+    (try (PrivateLoader/load file_path)
       (catch java.io.IOException e
         (log/error (str "Could not load native file: " s))
         (throw e)))))
