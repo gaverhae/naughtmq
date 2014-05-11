@@ -125,3 +125,5 @@
   []
   (load-libraries)
   (disable-jzmq-dynamic-loading))
+
+(load-zmq-native)
