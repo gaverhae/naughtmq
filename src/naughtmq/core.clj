@@ -33,6 +33,7 @@
       "i386"   "x86"
       "i686"   "x86"
       "x86_64" "x86_64"
+      "amd64"  "x86_64"
       (throw (UnsupportedOperationException.
                (str "Unsupported platform: " os-name ", " os-arch))))))
 
@@ -94,7 +95,7 @@
   "Loads the native libraries."
   []
   (let [libs (get {"win"   ["msvcr100" "msvcp100" "libzmq" "jzmq"]
-                   "linux" ["libzmq" "libjzmq"]
+                   "linux" ["zmq" "jzmq"]
                    "mac"   ["zmq" "jzmq"]}
                   (os))]
     (doseq [l libs] (load-library l))))
