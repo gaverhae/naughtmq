@@ -1,6 +1,6 @@
 # naughtmq
 
-NaughtMQ is a zero-config, zero-hassle way to use ZeroMQ wuth the JVM on the
+NaughtMQ is a zero-config, zero-hassle way to use ZeroMQ with the JVM on the
 three major platforms (Linux, OS X, Windows).
 
 ## Disclaimer
@@ -10,7 +10,8 @@ Expect things to break. At the moment, I have been able to successfully run the
 example programs below (in a `lein uberjar`) on OS X, Linux x86  and Linux
 x86_64 (the same virtual machines as used for compiling, though on a clean
 slate), and on Windows XP x86. I do not have access to a 64-bit version of
-Windows.
+Windows for testing, though the package should work (Visual Studio allows for
+the compilation of 64bit binaries on a 32bit machine).
 
 ## Usage
 
@@ -23,7 +24,10 @@ dependencies:
 [naughtmq "0.0.1"]
 ```
 
-Then, in your main namespace, require or use the `naughtmq.core` namespace **before** you import `org.zeromq.ZMQ`. As Clojure loads Java classes on import, you have to structure your `ns` declaration such that `naughtmq` comes first. Here is a minimal example of a Clojure namespace using `naughtmq`:
+Then, in your main namespace, require or use the `naughtmq.core` namespace
+**before** you import `org.zeromq.ZMQ`. As Clojure loads Java classes on
+import, you have to structure your `ns` declaration such that `naughtmq` comes
+first. Here is a minimal example of a Clojure namespace using `naughtmq`:
 
 ```clojure
 (ns zmq-test.core
@@ -68,12 +72,12 @@ that the usage for `naughtmq` is quite natural. Here is a minimal example:
 package test.zmq.with.naught;
 
 import org.zeromq.ZMQ; // order does not matter here
-import naughtmq.Laoder;
 
 public class Main {
+    // this line must appear before any ZMQ call
+    static { naughtmq.Loader.load(); }
+
     public static void main(String[] args) {
-        Loader.load(); // order does matter here!
-                       // this line must appear before any ZMQ call
         System.out.println(ZMQ.getFullVersion()); // ZMQ is loaded here
         // since the native libs have already been loaded by this point,
         // everything works.
