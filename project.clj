@@ -15,4 +15,5 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.1.6"]
                  [org.zeromq/jzmq "2.2.2"]]
+  :javac-options ["-target" "1.6" "-source" "1.6"]
   :java-source-paths ["src"])
