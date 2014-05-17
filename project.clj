@@ -1,4 +1,4 @@
-(defproject naughtmq "0.0.2-SNAPSHOT"
+(defproject naughtmq "0.0.2"
   :description "A native-embedding wrapper for jzmq"
   :url "https://github.com/gaverhae/naughtmq"
   :scm {:name "git"
