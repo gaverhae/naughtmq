@@ -1,7 +1,8 @@
 # naughtmq
 
 NaughtMQ is a zero-config, zero-hassle way to use ZeroMQ with the JVM on the
-three major platforms (Linux, OS X, Windows).
+three major platforms (Linux, OS X, Windows). It currently bundles ZeroMQ
+3.2.4 and jzmq 2.2.2.
 
 ## Disclaimer
 
@@ -21,7 +22,7 @@ To include this library in a Leiningen-based project, add this line to your
 dependencies:
 
 ```clojure
-[naughtmq "0.0.1"]
+[naughtmq "0.0.2"]
 ```
 
 Then, in your main namespace, require or use the `naughtmq.core` namespace
@@ -60,7 +61,7 @@ to your `pom.xml`, in addition to the dependency to this library:
 <dependency>
   <groupId>naughtmq</groupId>
   <artifactId>naughtmq</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
 </dependency>
 ```
 
