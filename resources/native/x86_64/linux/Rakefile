@@ -1,4 +1,4 @@
-zmq_version = "4.0.4"
+zmq_version = "3.2.4"
 jzmq_version = "2.2.2"
 zmq_name = "zeromq-#{zmq_version}"
 
@@ -37,7 +37,7 @@ file "zmq_build" => ["vagrant_running", zmq_name] do
     vsh "cd #{zmq_name} && ./configure && make"
     vsh "mv #{zmq_name}/include zmq_build/"
     vsh "mkdir zmq_build/lib"
-    vsh "mv #{zmq_name}/src/.libs/libzmq.so.3.1.0 zmq_build/lib/libzmq.so"
+    vsh "mv #{zmq_name}/src/.libs/libzmq.so.3.0.0 zmq_build/lib/libzmq.so"
 end
 
 directory zmq_name

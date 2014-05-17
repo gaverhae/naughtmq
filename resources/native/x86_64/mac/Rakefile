@@ -1,4 +1,4 @@
-zmq_version = "4.0.4"
+zmq_version = "3.2.4"
 jzmq_version = "2.2.2"
 zmq_name = "zeromq-#{zmq_version}"
 

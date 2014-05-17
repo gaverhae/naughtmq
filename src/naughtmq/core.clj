@@ -7,7 +7,7 @@
 
 (def version-for
   {"jzmq" "2.2.2"
-   "zmq"  "4.0.4"})
+   "zmq"  "3.2.4"})
 
 (defn- os
   "Returns a string representing the current operating system, one of win,
