@@ -66,7 +66,7 @@ to your `pom.xml`, in addition to the dependency to this library:
 ```
 
 Java, in contrast with Clojure, does *not* actually load classes upon import.
-The JVM actually waits for the first use of a classe to load it, which means
+The JVM actually waits for the first use of a class to load it, which means
 that the usage for `naughtmq` is quite natural. Here is a minimal example:
 
 ```java
